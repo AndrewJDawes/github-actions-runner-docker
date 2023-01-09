@@ -9,6 +9,7 @@ Self-hosted GitHub Actions Runner
     - `admin:org`
   - If a fine grained token
     - `Read and Write access to organization self hosted runners`
+    - [Screenshot](https://prnt.sc/MvULTX0YjoPy)
 - Create a `.env.sh` file in project
 - Add these 2 values to .env.sh file:
 
