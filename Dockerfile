@@ -2,18 +2,20 @@ ARG ARCH=
 # base
 FROM ${ARCH}ubuntu:latest
 
+WORKDIR /app
+
 # set the architecture
 ARG RUNNER_ARCH="x64"
 
 # set the github runner version
 ARG RUNNER_VERSION="2.300.2"
 
-# update the base packages and add a non-sudo user
-RUN apt-get update -y && apt-get upgrade -y && useradd -m github
+# allow the github runner to run as root - docker container will run as root by default
+ENV RUNNER_ALLOW_RUNASROOT=1
 
 # install python and the packages the your code depends on along with jq so we can parse JSON
 # add additional packages as necessary
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN apt-get update -y && apt-get upgrade -y && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     curl jq build-essential libssl-dev libffi-dev python3 python3-venv python3-dev python3-pip \
     ca-certificates \
     curl \
@@ -27,23 +29,18 @@ RUN mkdir -p /etc/apt/keyrings \
     && apt-get update -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
-# cd into the user directory, download and unzip the github actions runner
-RUN cd /home/github && mkdir actions-runner && cd actions-runner \
-    && curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz \
+# download and unzip the github actions runner
+RUN curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz \
     && tar xzf ./actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz
 
 # install some additional dependencies
-RUN chown -R github ~github && /home/github/actions-runner/bin/installdependencies.sh
+RUN ./bin/installdependencies.sh
 
 # copy over the start.sh script
 COPY app/start.sh start.sh
 
 # make the script executable
 RUN chmod +x start.sh
-
-# since the config and run script for actions are not allowed to be run by root,
-# set the user to "github" so all subsequent commands are run as the github user
-USER github
 
 # set the entrypoint to the start.sh script
 ENTRYPOINT ["./start.sh"]
