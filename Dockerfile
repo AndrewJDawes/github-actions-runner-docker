@@ -9,7 +9,7 @@ ARG RUNNER_ARCH="x64"
 ARG RUNNER_VERSION="2.300.2"
 
 # update the base packages and add a non-sudo user
-RUN apt-get update -y && apt-get upgrade -y && useradd -m docker
+RUN apt-get update -y && apt-get upgrade -y && useradd -m github
 
 # install python and the packages the your code depends on along with jq so we can parse JSON
 # add additional packages as necessary
@@ -28,12 +28,12 @@ RUN mkdir -p /etc/apt/keyrings \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # cd into the user directory, download and unzip the github actions runner
-RUN cd /home/docker && mkdir actions-runner && cd actions-runner \
+RUN cd /home/github && mkdir actions-runner && cd actions-runner \
     && curl -O -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz \
     && tar xzf ./actions-runner-linux-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz
 
 # install some additional dependencies
-RUN chown -R docker ~docker && /home/docker/actions-runner/bin/installdependencies.sh
+RUN chown -R github ~github && /home/github/actions-runner/bin/installdependencies.sh
 
 # copy over the start.sh script
 COPY app/start.sh start.sh
@@ -42,8 +42,8 @@ COPY app/start.sh start.sh
 RUN chmod +x start.sh
 
 # since the config and run script for actions are not allowed to be run by root,
-# set the user to "docker" so all subsequent commands are run as the docker user
-USER docker
+# set the user to "github" so all subsequent commands are run as the github user
+USER github
 
 # set the entrypoint to the start.sh script
 ENTRYPOINT ["./start.sh"]
