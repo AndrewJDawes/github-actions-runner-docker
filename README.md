@@ -2,6 +2,10 @@
 
 Self-hosted GitHub Actions Runner
 
+## WARNING
+
+This does not work with Actions that require Docker containers: https://github.com/actions/runner/issues/406
+
 ## Set up
 - Clone this repo
 - Create a personal access token in GitHub
